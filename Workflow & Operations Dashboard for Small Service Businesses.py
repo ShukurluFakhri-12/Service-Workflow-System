@@ -222,7 +222,7 @@ with tab1:
         st.info("You can edit statuses, deposits, notes. Click outside a cell to apply changes.")
 
         editable_cols = [
-            "Job_ID",
+            "Order_ID",
             "Client",
             "Item",
             "Assigned_To",
@@ -236,7 +236,7 @@ with tab1:
             "Notes",
         ]
 
-        # Ensure all cols exist
+       
         for col in editable_cols:
             if col not in st.session_state.custom_df.columns:
                 st.session_state.custom_df[col] = ""
