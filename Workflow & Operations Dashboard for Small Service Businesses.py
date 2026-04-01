@@ -287,10 +287,7 @@ with tab1:
                     st.session_state.custom_df = load_or_init_csv(CUSTOM_FILE, "custom")
                     st.success("Reset done (refresh if needed).")
 
-
-# -----------------------------
 # REPAIR JOBS TAB
-# -----------------------------
 with tab2:
     st.subheader("Repair Jobs (Intake → Bench → Pickup)")
     left, right = st.columns([1, 2])
@@ -298,11 +295,11 @@ with tab2:
     with left:
         st.markdown("### Add new repair job")
         with st.form("add_repair_form", clear_on_submit=True):
-            job_id = st.text_input("Job ID", placeholder="R-2002")
+            order_id = st.text_input("Order ID", placeholder="R-2002")
             client = st.text_input("Client", placeholder="Full name")
-            item = st.text_input("Item", placeholder="e.g., ring, bracelet, chain")
-            repair_type = st.text_input("Repair Type", placeholder="e.g., resizing, prong retip, solder")
-            assigned = st.text_input("Assigned To", placeholder="e.g., Bench, Repair Team")
+            item = st.text_input("Item", placeholder="e.g., laptop, bracelet, Watch")
+            repair_type = st.text_input("Repair Type", placeholder="e.g., Screen replacement, Battery change")
+            assigned = st.text_input("Assigned To", placeholder="e.g., Repair Team")
             status = st.selectbox("Status", REPAIR_STATUSES, index=0)
             intake_date = st.date_input("Intake Date", value=date.today(), key="repair_intake_date")
             est_completion = st.date_input("Estimated Completion (optional)", value=None, key="repair_est")
@@ -310,11 +307,11 @@ with tab2:
             deposit_paid = st.number_input("Deposit Paid", min_value=0.0, step=10.0, value=0.0, key="repair_dep")
             notes = st.text_area("Notes (optional)", height=80, key="repair_notes")
 
-            submitted = st.form_submit_button("Add repair job")
+            submitted = st.form_submit_button("Add repair order")
 
         if submitted:
-            if not job_id.strip():
-                st.error("Job ID is required.")
+            if not order_id.strip():
+                st.error("Order ID is required.")
             elif not client.strip():
                 st.error("Client is required.")
             else:
@@ -324,7 +321,7 @@ with tab2:
                 paid = "Yes" if remaining == 0 else "No"
 
                 new_row = {
-                    "Job_ID": job_id.strip(),
+                    "Order_ID": order_id.strip(),
                     "Client": client.strip(),
                     "Item": item.strip(),
                     "Repair_Type": repair_type.strip(),
