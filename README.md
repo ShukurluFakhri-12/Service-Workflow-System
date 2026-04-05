@@ -1,34 +1,85 @@
-# Jewelry Workflow Dashboard Demo
+# Service Workflow System
 
-This is a lightweight workflow dashboard designed for independent jewelry stores handling:
+A lightweight workflow and operations dashboard designed for small service-based businesses.
 
-- Custom jewelry projects
-- Repair intake tracking
-- Deposit & balance visibility
-- Pickup status management
+Originally inspired by jewelry store operations, the system is built to support any service workflow involving task tracking, status management, and payment visibility.
 
-## Purpose
+---
 
-The demo illustrates how a small-to-mid jewelry store can structure:
+## Overview
 
-- Custom design stages (Consultation → CAD → Production → Pickup)
-- Repair job intake and progress tracking
-- Revenue visibility and outstanding balances
+This project provides a structured way to manage:
+
+- Custom service workflows (e.g., Consultation → Design → Production → Completion)
+- Repair / service job tracking
+- Deposit and remaining balance monitoring
+- Job status progression
+- Basic operational analytics
+
+The system helps businesses move from unstructured tracking (notes, spreadsheets) to a more organized and visible workflow.
+
+---
+
+## Features
+
+- Add and manage custom jobs
+- Track repair/service tasks
+- Editable job tables
+- Status-based workflow tracking
+- Deposit & remaining balance calculation
+- Basic analytics (open jobs, revenue, outstanding balance)
+- Filtering and search functionality
+
+---
+
+## System Design
+
+The application follows a simple layered structure:
+
+- **UI Layer** — Streamlit interface for interaction
+- **Data Layer** — Currently CSV-based storage (planned upgrade to SQLite)
+- **Logic Layer** — Handles calculations (balances, status, filters)
+
+Future versions will extend this into a more structured backend system.
+
+---
 
 ## Tech Stack
 
 - Python
 - Streamlit
 - Pandas
-- CSV-based persistence
 
-## Live Demo
-
-(Deployed via Streamlit Community Cloud)
+(Currently using CSV storage, transitioning to SQLite)
 
 ---
 
-This demo is structured to be extended into:
-- Google Sheets integration
-- Airtable
-- Small production database
+## Project Direction
+
+This project is being actively developed toward a more advanced system with:
+
+- SQLite-based database backend
+- Improved business logic (status rules, priority detection)
+- Enhanced analytics
+- AI-assisted features (e.g., message classification, summaries)
+- Cleaner modular architecture
+
+---
+
+## Use Case
+
+While initially inspired by jewelry businesses, this system can be adapted for:
+
+- Repair services
+- Custom manufacturing
+- Small workshops
+- Freelance service operations
+- Any task-based workflow environment
+
+---
+
+## How to Run
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
