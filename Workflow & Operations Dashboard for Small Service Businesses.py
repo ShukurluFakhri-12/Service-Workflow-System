@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from database import init_db
 import os
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -32,7 +33,7 @@ REPAIR_STATUSES = [
     "Collected",
     "Completed"
 ]
-
+init_db()
 # Helpers
 def ensure_data_dir() :
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -76,7 +77,11 @@ def load_or_init_csv(path,kind):
                     "Item" : "New Project",
                     "Status": "Consultation",
                     "Total_Price": 1200.0,
-                    "Intake_Date" : today_str()
+                    "Intake_Date" : today_str(),
+                    "Deposit_Paid": 200.0,
+                    "Remaining_Balance": 1000.0,
+                    "Paid": "No",
+                    "Notes": "Demo record",
                                       
                     
                 }
@@ -93,7 +98,9 @@ def load_or_init_csv(path,kind):
                     "Repair_Type" : "Repair",
                     "Total_Price": 120.0,
                     "Deposit_Paid": 0.0,
-                    "Remaining_Balance": 120.0
+                    "Remaining_Balance": 120.0,
+                    "Paid": "No",
+                    "Notes": "Demo record",
 
                 }
             ]
