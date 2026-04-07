@@ -111,3 +111,41 @@ def get_all_repair_jobs():
     df = pd.read_sql_query("SELECT * FROM repair_jobs", conn)
     conn.close()
     return df
+
+def update_custom_job(job_data: dict):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        UPDATE custom_jobs 
+        SET Client=?, Item=?, Assigned_To=?, Status=?, Intake_Date=?, 
+            Due_Date=?, Total_Price=?, Deposit_Paid=?, Remaining_Balance=?, 
+            Paid=?, Notes=?
+        WHERE Order_ID=?
+    """, (
+        job_data['Client'], job_data['Item'], job_data['Assigned_To'], 
+        job_data['Status'], job_data['Intake_Date'], job_data['Due_Date'], 
+        job_data['Total_Price'], job_data['Deposit_Paid'], 
+        job_data['Remaining_Balance'], job_data['Paid'], 
+        job_data['Notes'], job_data['Order_ID']
+    ))
+    conn.commit()
+    conn.close()
+
+def update_repair_job(job_data: dict):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("""
+        UPDATE repair_jobs 
+        SET Client=?, Item=?, Repair_Type=?, Assigned_To=?, Status=?, 
+            Intake_Date=?, Est_Completion=?, Total_Price=?, Deposit_Paid=?, 
+            Remaining_Balance=?, Paid=?, Notes=?
+        WHERE Order_ID=?
+    """, (
+        job_data['Client'], job_data['Item'], job_data['Repair_Type'], 
+        job_data['Assigned_To'], job_data['Status'], job_data['Intake_Date'], 
+        job_data['Est_Completion'], job_data['Total_Price'], 
+        job_data['Deposit_Paid'], job_data['Remaining_Balance'], 
+        job_data['Paid'], job_data['Notes'], job_data['Order_ID']
+    ))
+    conn.commit()
+    conn.close()
