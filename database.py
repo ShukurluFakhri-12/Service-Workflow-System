@@ -53,3 +53,61 @@ def init_db():
     
     conn.commit()
     conn.close()
+    
+def insert_custom_job(data):
+    """Adds custom jobs to base."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    query = """
+    INSERT INTO custom_jobs (
+        order_id, client, item, assigned_to, status, 
+        intake_date, due_date, total_price, deposit_paid, 
+        remaining_balance, paid, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    
+    values = (
+        data["Order_ID"], data["Client"], data["Item"],
+        data["Assigned_To"], data["Status"], data["Intake_Date"],
+        data["Due_Date"], data["Total_Price"], data["Deposit_Paid"],
+        data["Remaining_Balance"], data["Paid"], data["Notes"]
+    )
+    
+    cursor.execute(query, values)
+    conn.commit()
+    conn.close()
+
+def get_all_custom_jobs():
+    """Returns all custom jobs like DataFrame"""
+    conn = get_connection()
+    df = pd.read_sql_query("SELECT * FROM custom_jobs" , conn)
+    conn.close()
+    return df
+
+def insert_repair_job(data):
+    """Adds repair jobs to base."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = """
+    INSERT INTO repair_jobs (
+        order_id, client, item, repair_type, assigned_to, status, 
+        intake_date, est_completion, total_price, deposit_paid, 
+        remaining_balance, paid, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    values = (
+        data["Order_ID"], data["Client"], data["Item"], data["Repair_Type"],
+        data["Assigned_To"], data["Status"], data["Intake_Date"],
+        data["Est_Completion"], data["Total_Price"], data["Deposit_Paid"],
+        data["Remaining_Balance"], data["Paid"], data["Notes"]
+    )
+    cursor.execute(query, values)
+    conn.commit()
+    conn.close()
+
+def get_all_repair_jobs():
+    conn = get_connection()
+    df = pd.read_sql_query("SELECT * FROM repair_jobs", conn)
+    conn.close()
+    return df
