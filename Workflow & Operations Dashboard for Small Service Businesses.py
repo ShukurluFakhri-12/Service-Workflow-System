@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from database import init_db
+from database import (
+    init_db, get_all_custom_jobs, insert_custom_job,
+    get_all_repair_jobs, insert_repair_job
+)
 import os
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -15,8 +18,7 @@ import streamlit as st
 st.set_page_config(page_title="Service Workflow Dashboard", layout="wide")
 
 DATA_DIR = "data"
-CUSTOM_FILE = os.path.join(DATA_DIR, "custom_jobs.csv")
-REPAIR_FILE = os.path.join(DATA_DIR, "repair_jobs.csv")
+init_db()
 
 CUSTOM_STATUSES = [
     "Consultation",
@@ -33,12 +35,7 @@ REPAIR_STATUSES = [
     "Collected",
     "Completed"
 ]
-init_db()
 # Helpers
-def ensure_data_dir() :
-    os.makedirs(DATA_DIR, exist_ok=True)
-
-
 def today_str() -> str:
     return date.today().isoformat()
 
@@ -57,62 +54,6 @@ def compute_remaining(total,deposit):
     else:
         return 0.0
 
-
-def load_or_init_csv(path,kind):
-    ensure_data_dir()
-    if os.path.exists(path):
-        df = pd.read_csv(path)
-        df.columns = [c.strip() for c in df.columns]
-        return df
-    else:
-        cols = ["Order_ID", "Client", "Item", "Assigned_To", "Status", "Intake_Date", "Due_Date", "Total_Price", "Deposit_Paid", "Remaining_Balance", "Paid", "Notes"]
-        df = pd.DataFrame(columns=cols)                
-
-    if kind == "custom":
-        df = pd.DataFrame(
-            [
-                {
-                    "Order_ID": "C-1001",
-                    "Client": "Example Client",
-                    "Item" : "New Project",
-                    "Status": "Consultation",
-                    "Total_Price": 1200.0,
-                    "Intake_Date" : today_str(),
-                    "Deposit_Paid": 200.0,
-                    "Remaining_Balance": 1000.0,
-                    "Paid": "No",
-                    "Notes": "Demo record",
-                                      
-                    
-                }
-            ]
-        )
-    else:
-        df = pd.DataFrame(
-            [
-                {
-                    "Order_ID": "R-2001",
-                    "Client": "Example Client",
-                    "Status": "Received",
-                    "Intake_Date": today_str(),
-                    "Repair_Type" : "Repair",
-                    "Total_Price": 120.0,
-                    "Deposit_Paid": 0.0,
-                    "Remaining_Balance": 120.0,
-                    "Paid": "No",
-                    "Notes": "Demo record",
-
-                }
-            ]
-        )
-
-    df.to_csv(path, index=False)
-    return df
-
-def save_csv(df,path):
-    ensure_data_dir()
-    df.to_csv(path, index=False)
-
 def money_fmt(x):
     try:
         number = float(x)
@@ -130,10 +71,10 @@ tab1, tab2, tab3 = st.tabs(["Custom Jobs", "Repair Jobs", "Analytics"])
 # Load data into session
 
 if "custom_df" not in st.session_state:
-    st.session_state.custom_df = load_or_init_csv(CUSTOM_FILE, "custom")
+    st.session_state.custom_df = get_all_custom_jobs()
 
 if "repair_df" not in st.session_state:
-    st.session_state.repair_df = load_or_init_csv(REPAIR_FILE, "repair")
+    st.session_state.repair_df = get_all_repair_jobs()
 
 # CUSTOM JOBS TAB
 with tab1:
@@ -182,11 +123,10 @@ with tab1:
                     "Notes": notes.strip(),
                 }
 
-                df = st.session_state.custom_df.copy()
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                st.session_state.custom_df = df
-                save_csv(df, CUSTOM_FILE)
-                st.success("Custom job added.")
+                insert_custom_job(new_row)
+                st.session_state.custom_df = get_all_custom_jobs()
+                st.success("Custom job added to database!")
+                st.rerun()
 
         st.markdown("---")
         st.markdown("### Filters")
@@ -346,11 +286,10 @@ with tab2:
                     "Notes": notes.strip(),
                 }
 
-                df = st.session_state.repair_df.copy()
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                st.session_state.repair_df = df
-                save_csv(df, REPAIR_FILE)
-                st.success("Repair job added.")
+                insert_repair_job(new_row)
+                st.session_state.repair_df = get_all_repair_jobs()
+                st.success("Repair job added to database!")
+                st.rerun()
 
         st.markdown("---")
         st.markdown("### Filters")
