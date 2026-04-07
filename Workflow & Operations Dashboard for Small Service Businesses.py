@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from database import (
     init_db, get_all_custom_jobs, insert_custom_job,
-    get_all_repair_jobs, insert_repair_job
+    get_all_repair_jobs, insert_repair_job,
+    update_custom_job, update_repair_job 
 )
 import os
 from dataclasses import dataclass
@@ -17,7 +18,6 @@ import streamlit as st
 # Config
 st.set_page_config(page_title="Service Workflow Dashboard", layout="wide")
 
-DATA_DIR = "data"
 init_db()
 
 CUSTOM_STATUSES = [
@@ -207,15 +207,16 @@ with tab1:
 
         # Update session + save if changes
         if edited is not None:
-            df_all = edited.copy()
-            # Fix numeric
-            df_all["Total_Price"] = pd.to_numeric(df_all["Total_Price"], errors="coerce").fillna(0.0)
-            df_all["Deposit_Paid"] = pd.to_numeric(df_all["Deposit_Paid"], errors="coerce").fillna(0.0)
-            df_all["Remaining_Balance"] = (df_all["Total_Price"] - df_all["Deposit_Paid"]).clip(lower=0.0)
-            df_all["Paid"] = df_all["Remaining_Balance"].apply(lambda x: "Yes" if float(x) == 0 else "No")
-
-            st.session_state.custom_df = df_all
-            save_csv(df_all, CUSTOM_FILE)
+           for index, row in edited.iterrows():
+                job_data = row.to_dict()
+                job_data["Total_Price"] = safe_float(job_data["Total_Price"])
+                job_data["Deposit_Paid"] = safe_float(job_data["Deposit_Paid"])
+                job_data["Remaining_Balance"] = compute_remaining(job_data["Total_Price"], job_data["Deposit_Paid"])
+                job_data["Paid"] = "Yes" if job_data["Remaining_Balance"] == 0 else "No"
+                
+                update_custom_job(job_data)
+        
+            st.session_state.custom_df = get_all_custom_jobs()  
 
         st.markdown("### Stage view (quick scan)")
         stage_counts = st.session_state.custom_df["Status"].value_counts().reindex(CUSTOM_STATUSES, fill_value=0)
@@ -366,14 +367,16 @@ with tab2:
         )
 
         if edited is not None:
-            df_all = edited.copy()
-            df_all["Total_Price"] = pd.to_numeric(df_all["Total_Price"], errors="coerce").fillna(0.0)
-            df_all["Deposit_Paid"] = pd.to_numeric(df_all["Deposit_Paid"], errors="coerce").fillna(0.0)
-            df_all["Remaining_Balance"] = (df_all["Total_Price"] - df_all["Deposit_Paid"]).clip(lower=0.0)
-            df_all["Paid"] = df_all["Remaining_Balance"].apply(lambda x: "Yes" if float(x) == 0 else "No")
-
-            st.session_state.repair_df = df_all
-            save_csv(df_all, REPAIR_FILE)
+            for index, row in edited.iterrows():
+                job_data = row.to_dict()
+                
+                job_data["Total_Price"] = safe_float(job_data["Total_Price"])
+                job_data["Deposit_Paid"] = safe_float(job_data["Deposit_Paid"])
+                job_data["Remaining_Balance"] = compute_remaining(job_data["Total_Price"], job_data["Deposit_Paid"])
+                job_data["Paid"] = "Yes" if job_data["Remaining_Balance"] == 0 else "No"
+                
+                update_repair_job(job_data)
+            st.session_state.repair_df = get_all_repair_jobs()
 
         st.markdown("### Stage view")
         stage_counts = st.session_state.repair_df["Status"].value_counts().reindex(REPAIR_STATUSES, fill_value=0)
