@@ -86,7 +86,7 @@ with tab1:
         with st.form("add_custom_form", clear_on_submit=True):
             order_id = st.text_input("Order ID", placeholder="ORD-1001")
             client = st.text_input("Client", placeholder="Full name")
-            item = st.text_input("Service/İtem", placeholder="e.g., Repair, Maintenance, Custom build")
+            item = st.text_input("Service/Item", placeholder="e.g., Repair, Maintenance, Custom build")
             assigned = st.text_input("Assigned To", placeholder="e.g., Specialist name or department")
             status = st.selectbox("Status", CUSTOM_STATUSES, index=0)
             intake_date = st.date_input("Intake Date", value=date.today())
@@ -222,21 +222,13 @@ with tab1:
         stage_counts = st.session_state.custom_df["Status"].value_counts().reindex(CUSTOM_STATUSES, fill_value=0)
         st.bar_chart(stage_counts)
 
-        with st.expander("Export"):
-            col_a, col_b = st.columns(2)
-            with col_a:
-                st.download_button(
-                    "Download Custom Jobs CSV",
-                    data=st.session_state.custom_df.to_csv(index=False).encode("utf-8"),
-                    file_name="custom_jobs.csv",
-                    mime="text/csv",
-                )
-            with col_b:
-                if st.button("Reset demo custom data"):
-                    if os.path.exists(CUSTOM_FILE):
-                        os.remove(CUSTOM_FILE)
-                    st.session_state.custom_df = load_or_init_csv(CUSTOM_FILE, "custom")
-                    st.success("Reset done (refresh if needed).")
+    with st.expander("Export"):
+            st.download_button(
+        "Download Custom Jobs CSV",
+        data=st.session_state.custom_df.to_csv(index=False).encode("utf-8"),
+        file_name="custom_jobs.csv",
+        mime="text/csv",
+    )
 
 # REPAIR JOBS TAB
 with tab2:
@@ -392,11 +384,8 @@ with tab2:
                     mime="text/csv",
                 )
             with col_b:
-                if st.button("Reset demo repair data"):
-                    if os.path.exists(REPAIR_FILE):
-                        os.remove(REPAIR_FILE)
-                    st.session_state.repair_df = load_or_init_csv(REPAIR_FILE, "repair")
-                    st.success("Reset done (refresh if needed).")
+                if st.button("Clear Screen View"):
+                    st.rerun()
 
 # ANALYTICS TAB
 
