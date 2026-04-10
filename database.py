@@ -1,3 +1,4 @@
+
 import sqlite3
 import pandas as pd
 
@@ -113,14 +114,14 @@ def get_all_repair_jobs():
     return df
 
 def update_custom_job(job_data: dict):
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     c = conn.cursor()
     c.execute("""
         UPDATE custom_jobs 
-        SET Client=?, Item=?, Assigned_To=?, Status=?, Intake_Date=?, 
-            Due_Date=?, Total_Price=?, Deposit_Paid=?, Remaining_Balance=?, 
-            Paid=?, Notes=?
-        WHERE Order_ID=?
+        SET client=?, item=?, assigned_to=?, status=?, intake_date=?, 
+            due_date=?, total_price=?, deposit_paid=?, remaining_balance=?, 
+            paid=?, notes=?
+        WHERE order_id=?
     """, (
         job_data['Client'], job_data['Item'], job_data['Assigned_To'], 
         job_data['Status'], job_data['Intake_Date'], job_data['Due_Date'], 
@@ -132,14 +133,14 @@ def update_custom_job(job_data: dict):
     conn.close()
 
 def update_repair_job(job_data: dict):
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     c = conn.cursor()
     c.execute("""
         UPDATE repair_jobs 
-        SET Client=?, Item=?, Repair_Type=?, Assigned_To=?, Status=?, 
-            Intake_Date=?, Est_Completion=?, Total_Price=?, Deposit_Paid=?, 
-            Remaining_Balance=?, Paid=?, Notes=?
-        WHERE Order_ID=?
+        SET client=?, item=?, repair_type=?, assigned_to=?, status=?, 
+            intake_date=?, est_completion=?, total_price=?, deposit_paid=?, 
+            remaining_balance=?, paid=?, notes=?
+        WHERE order_id=?
     """, (
         job_data['Client'], job_data['Item'], job_data['Repair_Type'], 
         job_data['Assigned_To'], job_data['Status'], job_data['Intake_Date'], 
