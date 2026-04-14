@@ -140,6 +140,9 @@ with tab1:
         for col in ["Total_Price", "Deposit_Paid", "Remaining_Balance"]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+        today = pd.to_datetime(date.today())
+        df["Due_Date"] = pd.to_datetime(df["Due_Date"], errors="coerce")
+        df["Overdue"] = (df["Status"] != "Completed") & (df["Due_Date"] < today)
 
         # Recompute remaining + paid (to keep consistent)
         df["Remaining_Balance"] = (df["Total_Price"] - df["Deposit_Paid"]).clip(lower=0.0)
@@ -162,11 +165,13 @@ with tab1:
             df = df[mask]
 
         # Summary metrics
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("Open jobs", int((df["Status"] != "Completed").sum()))
         c2.metric("Completed", int((df["Status"] == "Completed").sum()))
         c3.metric("Total revenue (listed)", money_fmt(df["Total_Price"].sum()))
         c4.metric("Outstanding balance", money_fmt(df["Remaining_Balance"].sum()))
+        overdue_count = int(df["Overdue"].sum())
+        c5.metric("Overdue Jobs", overdue_count)
 
         st.markdown("### Job table (editable)")
         st.info("You can edit statuses, deposits, notes. Click outside a cell to apply changes.")
@@ -184,6 +189,7 @@ with tab1:
             "Remaining_Balance",
             "Paid",
             "Notes",
+            "Overdue"
         ]
 
        
@@ -192,7 +198,7 @@ with tab1:
                 st.session_state.custom_df[col] = ""
 
         edited = st.data_editor(
-            st.session_state.custom_df[editable_cols],
+            df[editable_cols],
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -201,6 +207,10 @@ with tab1:
                 "Deposit_Paid": st.column_config.NumberColumn("Deposit Paid", min_value=0.0, step=10.0),
                 "Remaining_Balance": st.column_config.NumberColumn("Remaining", disabled=True),
                 "Paid": st.column_config.TextColumn("Paid", disabled=True),
+                "Overdue": st.column_config.CheckboxColumn(
+                    "Overdue", 
+                    help="If job has been delayed, it is marked automatically",
+                    disabled=True ) , 
             },
             key="custom_editor",
         )
