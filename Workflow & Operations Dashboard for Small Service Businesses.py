@@ -144,6 +144,15 @@ with tab1:
         df["Due_Date"] = pd.to_datetime(df["Due_Date"], errors="coerce")
         df["Overdue"] = (df["Status"] != "Completed") & (df["Due_Date"] < today)
 
+        def get_priority(row):
+            if row["Overdue"]:
+                return "🔴 High"
+            elif pd.notnull(row["Due_Date"]) and (row["Due_Date"] - today).days <= 3:
+                return "🟡 Medium"
+            else:
+                return "🟢 Low"
+        df["Priority"] = df.apply(get_priority, axis=1)
+
         # Recompute remaining + paid (to keep consistent)
         df["Remaining_Balance"] = (df["Total_Price"] - df["Deposit_Paid"]).clip(lower=0.0)
         df["Paid"] = df["Remaining_Balance"].apply(lambda x: "Yes" if float(x) == 0 else "No")
@@ -165,13 +174,15 @@ with tab1:
             df = df[mask]
 
         # Summary metrics
-        c1, c2, c3, c4, c5 = st.columns(5)
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
         c1.metric("Open jobs", int((df["Status"] != "Completed").sum()))
         c2.metric("Completed", int((df["Status"] == "Completed").sum()))
         c3.metric("Total revenue (listed)", money_fmt(df["Total_Price"].sum()))
         c4.metric("Outstanding balance", money_fmt(df["Remaining_Balance"].sum()))
         overdue_count = int(df["Overdue"].sum())
         c5.metric("Overdue Jobs", overdue_count)
+        high_priority_count = int((df["Priority"] == "🔴 High").sum())
+        c6.metric("High Priority", high_priority_count, delta_color="inverse")
 
         st.markdown("### Job table (editable)")
         st.info("You can edit statuses, deposits, notes. Click outside a cell to apply changes.")
@@ -184,6 +195,7 @@ with tab1:
             "Status",
             "Intake_Date",
             "Due_Date",
+            "Priority",
             "Total_Price",
             "Deposit_Paid",
             "Remaining_Balance",
@@ -198,7 +210,7 @@ with tab1:
                 st.session_state.custom_df[col] = ""
 
         edited = st.data_editor(
-            df[editable_cols],
+            st.session_state.custom_df[editable_cols],
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -207,6 +219,11 @@ with tab1:
                 "Deposit_Paid": st.column_config.NumberColumn("Deposit Paid", min_value=0.0, step=10.0),
                 "Remaining_Balance": st.column_config.NumberColumn("Remaining", disabled=True),
                 "Paid": st.column_config.TextColumn("Paid", disabled=True),
+                "Priority": st.column_config.TextColumn(
+                    "Priority",
+                    help="Urgency priority",
+                    disabled=True 
+                ),
                 "Overdue": st.column_config.CheckboxColumn(
                     "Overdue", 
                     help="If job has been delayed, it is marked automatically",
