@@ -84,6 +84,20 @@ def get_all_custom_jobs():
     conn = get_connection()
     df = pd.read_sql_query("SELECT * FROM custom_jobs" , conn)
     conn.close()
+    df = df.rename(columns={
+        "order_id": "Order_ID",
+        "client": "Client",
+        "item": "Item",
+        "assigned_to": "Assigned_To",
+        "status": "Status",
+        "intake_date": "Intake_Date",
+        "due_date": "Due_Date",
+        "total_price": "Total_Price",
+        "deposit_paid": "Deposit_Paid",
+        "remaining_balance": "Remaining_Balance",
+        "paid": "Paid",
+        "notes": "Notes",
+    })
     return df
 
 def insert_repair_job(data):
@@ -111,6 +125,21 @@ def get_all_repair_jobs():
     conn = get_connection()
     df = pd.read_sql_query("SELECT * FROM repair_jobs", conn)
     conn.close()
+    df = df.rename(columns={
+        "order_id": "Order_ID",
+        "client": "Client",
+        "item": "Item",
+        "repair_type": "Repair_Type",
+        "assigned_to": "Assigned_To",
+        "status": "Status",
+        "intake_date": "Intake_Date",
+        "est_completion": "Est_Completion",
+        "total_price": "Total_Price",
+        "deposit_paid": "Deposit_Paid",
+        "remaining_balance": "Remaining_Balance",
+        "paid": "Paid",
+        "notes": "Notes",
+    })
     return df
 
 def update_custom_job(job_data: dict):
