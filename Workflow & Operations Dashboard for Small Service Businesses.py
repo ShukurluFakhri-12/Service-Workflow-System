@@ -133,6 +133,8 @@ with tab1:
         f_status = st.multiselect("Status filter", CUSTOM_STATUSES, default=CUSTOM_STATUSES)
         f_paid = st.selectbox("Paid filter", ["All", "Paid", "Unpaid"], index=0)
         f_search = st.text_input("Search (client / item / order id)", placeholder="type to search")
+        overdue_only = st.checkbox("Show overdue only")
+        high_priority_only = st.checkbox("Show high priority only")
 
     with right:
         df = st.session_state.custom_df.copy()
@@ -172,6 +174,10 @@ with tab1:
                 | df["Item"].astype(str).str.lower().str.contains(q)
             )
             df = df[mask]
+        if overdue_only:
+            df = df[df["Overdue"] == True]
+        if high_priority_only:
+            df = df[df["Priority"] == "🔴 High"]
 
         # Summary metrics
         c1, c2, c3, c4, c5, c6 = st.columns(6)
@@ -183,6 +189,13 @@ with tab1:
         c5.metric("Overdue Jobs", overdue_count)
         high_priority_count = int((df["Priority"] == "🔴 High").sum())
         c6.metric("High Priority", high_priority_count, delta_color="inverse")
+        st.markdown("---")
+        if overdue_count > 0:
+            st.warning(f"{overdue_count} overdue jobs need attention")
+        else:
+            st.success("No overdue jobs.")
+        if high_priority_count > 0:
+            st.info(f"{high_priority_count} high-priority jobs should be reviewed today.")
 
         st.markdown("### Job table (editable)")
         st.info("You can edit statuses, deposits, notes. Click outside a cell to apply changes.")
@@ -316,6 +329,8 @@ with tab2:
         f_status = st.multiselect("Status filter", REPAIR_STATUSES, default=REPAIR_STATUSES, key="repair_status_filter")
         f_paid = st.selectbox("Paid filter", ["All", "Paid", "Unpaid"], index=0, key="repair_paid_filter")
         f_search = st.text_input("Search (client / item / job id)", placeholder="type to search", key="repair_search")
+        overdue_only = st.checkbox("Show overdue only", key="repair_overdue")
+        high_priority_only = st.checkbox("Show high priority only", key="repair_priority")
 
     with right:
         df = st.session_state.repair_df.copy()
@@ -323,6 +338,21 @@ with tab2:
         for col in ["Total_Price", "Deposit_Paid", "Remaining_Balance"]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+        today = pd.to_datetime(date.today())
+        df["Est_Completion"] = pd.to_datetime(df["Est_Completion"] , errors = "coerce")
+        df["Overdue"] = (
+            (df["Status"] != "Completed") &
+            (df["Est_Completion"] < today)
+        )
+        def get_priority(row):
+            if row["Overdue"]:
+                return "🔴 High"
+            elif pd.notnull(row["Est_Completion"]) and (row["Est_Completion"] - today).days <= 3:
+                return "🟡 Medium"
+            else:
+                return "🟢 Low"
+
+        df["Priority"] = df.apply(get_priority, axis=1)
 
         df["Remaining_Balance"] = (df["Total_Price"] - df["Deposit_Paid"]).clip(lower=0.0)
         df["Paid"] = df["Remaining_Balance"].apply(lambda x: "Yes" if float(x) == 0 else "No")
@@ -342,12 +372,27 @@ with tab2:
                 | df_f["Repair_Type"].astype(str).str.lower().str.contains(q)
             )
             df_f = df_f[mask]
+        if overdue_only:
+            df_f = df_f[df_f["Overdue"] == True]
+        if high_priority_only:
+            df_f = df_f[df_f["Priority"] == "🔴 High"]
 
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Open repairs", int((df_f["Status"] != "Completed").sum()))
         c2.metric("Completed", int((df_f["Status"] == "Completed").sum()))
         c3.metric("Total revenue (listed)", money_fmt(df_f["Total_Price"].sum()))
         c4.metric("Outstanding balance", money_fmt(df_f["Remaining_Balance"].sum()))
+        
+        overdue_count = int(df_f["Overdue"].sum())
+        high_priority_count = int((df_f["Priority"] == "🔴 High").sum())
+
+        if overdue_count > 0:
+            st.warning(f"{overdue_count} overdue repair jobs need attention.")
+        else:
+            st.success("No overdue repair jobs.")
+
+        if high_priority_count > 0:
+            st.info(f"{high_priority_count} high-priority repair jobs should be reviewed.")
 
         st.markdown("### Repair table (editable)")
         st.info("Edit status, deposits, notes. Remaining/Paid auto-update.")
@@ -365,6 +410,8 @@ with tab2:
             "Deposit_Paid",
             "Remaining_Balance",
             "Paid",
+            "Priority",
+            "Overdue",
             "Notes",
         ]
         for col in editable_cols:
@@ -380,6 +427,8 @@ with tab2:
                 "Total_Price": st.column_config.NumberColumn("Total Price", min_value=0.0, step=10.0),
                 "Deposit_Paid": st.column_config.NumberColumn("Deposit Paid", min_value=0.0, step=10.0),
                 "Remaining_Balance": st.column_config.NumberColumn("Remaining", disabled=True),
+                "Priority": st.column_config.TextColumn("Priority", disabled=True),
+                "Overdue": st.column_config.CheckboxColumn("Overdue", disabled=True),
                 "Paid": st.column_config.TextColumn("Paid", disabled=True),
             },
             key="repair_editor",
