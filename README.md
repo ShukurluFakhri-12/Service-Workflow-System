@@ -1,85 +1,92 @@
-# Service Workflow System
+Service Workflow Dashboard
 
-A lightweight workflow and operations dashboard designed for small service-based businesses.
+A workflow and operations dashboard designed for small service-based businesses to manage custom orders and repair jobs with real-time tracking, prioritization, and decision support.
 
-Originally inspired by jewelry store operations, the system is built to support any service workflow involving task tracking, status management, and payment visibility.
+📌 Overview
 
----
+This system helps businesses organize and monitor:
 
-## Overview
+Custom service workflows (Consultation → Design → Production → Pickup)
+Repair processes (Intake → Processing → Completion)
+Financial tracking (deposits, balances, payments)
+Task prioritization and overdue detection
 
-This project provides a structured way to manage:
+The goal is to transform raw operational data into actionable insights.
 
-- Custom service workflows (e.g., Consultation → Design → Production → Completion)
-- Repair / service job tracking
-- Deposit and remaining balance monitoring
-- Job status progression
-- Basic operational analytics
+🚀 Key Features
+Workflow Management
+Track custom jobs and repair orders separately
+Status-based progression across defined stages
+Editable job tables with real-time updates
+Financial Tracking
+Automatic calculation of:
+Remaining balance
+Payment status
+Revenue and outstanding balance metrics
+Smart Logic (Decision Support)
+Overdue detection based on deadlines
+Priority system:
+🔴 High (overdue)
+🟡 Medium (due soon)
+🟢 Low
+Insight messages highlighting critical tasks
+Filtering System
+Filter by:
+Status
+Payment state
+Search query
+Overdue jobs
+High-priority jobs
+Operational Insights
+Workload analysis (jobs per assignee)
+Bottleneck detection (stage with highest load)
+Pipeline visualization for both workflows
+Data Management
+SQLite database backend
+Persistent storage for all jobs
+CSV export functionality
+🛠 Tech Stack
+Python
+Streamlit (UI)
+Pandas (data processing)
+SQLite3 (database)
+🧠 System Design
 
-The system helps businesses move from unstructured tracking (notes, spreadsheets) to a more organized and visible workflow.
+The system follows a simple layered structure:
 
----
+UI Layer → Streamlit interface
+Logic Layer → priority, overdue, financial calculations
+Data Layer → SQLite database
 
-## Features
+Computed fields (priority, overdue, balances) are dynamically generated rather than stored, ensuring consistency.
 
-- Add and manage custom jobs
-- Track repair/service tasks
-- Editable job tables
-- Status-based workflow tracking
-- Deposit & remaining balance calculation
-- Basic analytics (open jobs, revenue, outstanding balance)
-- Filtering and search functionality
+📊 Example Use Cases
+A repair shop tracking customer devices
+A jewelry/custom goods business managing orders
+Any small service operation handling staged workflows
+▶️ How to Run
+Clone the repository
 
----
+Install dependencies:
 
-## System Design
+pip install streamlit pandas
 
-The application follows a simple layered structure:
+Run the app:
 
-- **UI Layer** — Streamlit interface for interaction
-- **Data Layer** — Currently CSV-based storage (planned upgrade to SQLite)
-- **Logic Layer** — Handles calculations (balances, status, filters)
-
-Future versions will extend this into a more structured backend system.
-
----
-
-## Tech Stack
-
-- Python
-- Streamlit
-- Pandas
-
-(Currently using CSV storage, transitioning to SQLite)
-
----
-
-## Project Direction
-
-This project is being actively developed toward a more advanced system with:
-
-- SQLite-based database backend
-- Improved business logic (status rules, priority detection)
-- Enhanced analytics
-- AI-assisted features (e.g., message classification, summaries)
-- Cleaner modular architecture
-
----
-
-## Use Case
-
-While initially inspired by jewelry businesses, this system can be adapted for:
-
-- Repair services
-- Custom manufacturing
-- Small workshops
-- Freelance service operations
-- Any task-based workflow environment
-
----
-
-## How to Run
-
-```bash
-pip install -r requirements.txt
 streamlit run app.py
+📈 Future Improvements
+Advanced analytics (trend tracking, forecasting)
+User authentication / multi-user support
+Integration with Google Sheets or external APIs
+AI-based task recommendations
+📌 Conclusion
+
+This project demonstrates how a simple system can evolve from a basic CRUD app into a decision-support workflow system by adding structured logic, analytics, and user-focused insights.
+
+🧩 Author Note
+
+Built as a learning project to develop:
+
+system design thinking
+data handling
+practical automation skills
