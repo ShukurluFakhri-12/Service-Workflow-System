@@ -1,4 +1,4 @@
-Service Workflow Dashboard
+# Service Workflow Dashboard
 
 A workflow and operations dashboard designed for small service-based businesses to manage custom orders and repair jobs with real-time tracking, prioritization, and decision support.
 
