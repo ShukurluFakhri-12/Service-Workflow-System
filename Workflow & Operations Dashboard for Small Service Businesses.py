@@ -7,11 +7,7 @@ from database import (
     get_all_repair_jobs, insert_repair_job,
     update_custom_job, update_repair_job 
 )
-import os
-from dataclasses import dataclass
 from datetime import date, datetime
-from typing import List, Optional
-
 import pandas as pd
 import streamlit as st
 
@@ -95,9 +91,9 @@ with tab1:
             deposit_paid = st.number_input("Deposit Paid", min_value=0.0, step=10.0, value=0.0)
             notes = st.text_area("Notes (optional)", height=80)
 
-            submitted = st.form_submit_button("Add job")
+            custom_submitted = st.form_submit_button("Add job")
 
-        if submitted:
+        if custom_submitted:
             if not order_id.strip():
                 st.error("Order ID is required.")
             elif not client.strip():
@@ -126,7 +122,6 @@ with tab1:
                 insert_custom_job(new_row)
                 st.session_state.custom_df = get_all_custom_jobs()
                 st.success("Custom job added to database!")
-                st.rerun()
 
         st.markdown("---")
         st.markdown("### Filters")
@@ -222,8 +217,10 @@ with tab1:
             if col not in st.session_state.custom_df.columns:
                 st.session_state.custom_df[col] = ""
 
+        original_custom = st.session_state.custom_df[editable_cols].copy()
+        
         edited = st.data_editor(
-            st.session_state.custom_df[editable_cols],
+            original_custom,
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -246,8 +243,8 @@ with tab1:
         )
 
         # Update session + save if changes
-        if edited is not None:
-           for index, row in edited.iterrows():
+        if edited is not None and not edited.equals(original_custom):
+            for index, row in edited.iterrows():
                 job_data = row.to_dict()
                 job_data["Total_Price"] = safe_float(job_data["Total_Price"])
                 job_data["Deposit_Paid"] = safe_float(job_data["Deposit_Paid"])
@@ -256,11 +253,32 @@ with tab1:
                 
                 update_custom_job(job_data)
         
-            st.session_state.custom_df = get_all_custom_jobs()  
+            st.session_state.custom_df = get_all_custom_jobs() 
+            st.rerun()
 
         st.markdown("### Stage view (quick scan)")
         stage_counts = st.session_state.custom_df["Status"].value_counts().reindex(CUSTOM_STATUSES, fill_value=0)
         st.bar_chart(stage_counts)
+        
+        st.markdown("### Workload by assignee")
+        workload = st.session_state.custom_df["Assigned_To"].value_counts()
+
+        if not workload.empty:
+            st.bar_chart(workload)
+            busiest_person = workload.idxmax()
+            busiest_count = workload.max()
+            st.info(f"{busiest_person} currently has the highest workload with {busiest_count} jobs.")
+        else:
+            st.info("No assigned jobs yet.")
+            
+        st.markdown("### Bottleneck insight")
+
+        if not stage_counts.empty:
+            bottleneck_stage = stage_counts.idxmax()
+            bottleneck_count = stage_counts.max()
+            st.info(f"The current bottleneck is {bottleneck_stage} with {bottleneck_count} jobs.")
+        else:
+            st.info("No job data available yet.")
 
     with st.expander("Export"):
         st.download_button(
@@ -290,9 +308,9 @@ with tab2:
             deposit_paid = st.number_input("Deposit Paid", min_value=0.0, step=10.0, value=0.0, key="repair_dep")
             notes = st.text_area("Notes (optional)", height=80, key="repair_notes")
 
-            submitted = st.form_submit_button("Add repair order")
+            repair_submitted = st.form_submit_button("Add repair order")
 
-        if submitted:
+        if repair_submitted:
             if not order_id.strip():
                 st.error("Order ID is required.")
             elif not client.strip():
@@ -322,7 +340,6 @@ with tab2:
                 insert_repair_job(new_row)
                 st.session_state.repair_df = get_all_repair_jobs()
                 st.success("Repair job added to database!")
-                st.rerun()
 
         st.markdown("---")
         st.markdown("### Filters")
@@ -418,8 +435,10 @@ with tab2:
             if col not in st.session_state.repair_df.columns:
                 st.session_state.repair_df[col] = ""
 
+        original_repair = st.session_state.repair_df[editable_cols].copy()
+
         edited = st.data_editor(
-            st.session_state.repair_df[editable_cols],
+            original_repair,
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -434,7 +453,7 @@ with tab2:
             key="repair_editor",
         )
 
-        if edited is not None:
+        if edited is not None and not edited.equals(original_repair):
             for index, row in edited.iterrows():
                 job_data = row.to_dict()
                 
@@ -445,6 +464,7 @@ with tab2:
                 
                 update_repair_job(job_data)
             st.session_state.repair_df = get_all_repair_jobs()
+            st.rerun()
 
         st.markdown("### Stage view")
         stage_counts = st.session_state.repair_df["Status"].value_counts().reindex(REPAIR_STATUSES, fill_value=0)
