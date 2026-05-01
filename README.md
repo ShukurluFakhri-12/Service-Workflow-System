@@ -1,4 +1,5 @@
 # Service Workflow Dashboard
+Includes a research-style write-up explaining the system design, logic, and implementation decisions.
 
 A workflow and operations dashboard designed for small service-based businesses to manage custom orders and repair jobs with real-time tracking, prioritization, and decision support.
 
@@ -16,6 +17,12 @@ This system helps businesses organize and monitor:
 The goal is to transform raw operational data into **actionable insights**.
 
 ---
+
+## 📄 Research Write-up
+
+A short research-style explanation of the system is available here:
+
+[View paper](workflow-decision-support-system.pdf)
 
 ## 🚀 Key Features
 
